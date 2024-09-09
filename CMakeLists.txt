@@ -17,7 +17,7 @@ FetchContent_Declare(SFML
 FetchContent_MakeAvailable(SFML)
 
 
-add_executable(main src/main.cpp src/Simulation.cpp)
+add_executable(main src/main.cpp src/Simulation.cpp src/Linear2DVector.cpp)
 
 target_link_libraries(main PRIVATE sfml-graphics)
 target_include_directories(main PUBLIC include)

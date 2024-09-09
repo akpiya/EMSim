@@ -1,20 +1,18 @@
 #include "Simulation.hpp"
+#include "Linear2DVector.hpp"
 #include <numbers>
 
 Simulation::Simulation(int m, int n, DECIMAL deltaX, DECIMAL deltaY, DECIMAL deltaT)
-    : M(m), N(n), deltaX(deltaX), deltaY(deltaY), deltaT(deltaT) {
-    E_z = std::vector<std::vector<DECIMAL>>(M, std::vector<DECIMAL>(N, 0));
-    H_x = std::vector<std::vector<DECIMAL>>(M, std::vector<DECIMAL>(N-1, 0));
-    H_y = std::vector<std::vector<DECIMAL>>(M-1, std::vector<DECIMAL>(N, 0));
-
+    : M(m), N(n), deltaX(deltaX), deltaY(deltaY), deltaT(deltaT), E_z(M, N), H_x(M, N-1), H_y(M-1, N),
+        C_eze(M, N), C_ezh(M, N), C_hxh(M, N-1), C_hxe(M, N-1), C_hyh(M-1, N), C_hye(M-1, N) {
     initializeCoefficientMatrix();
 }
 
 void Simulation::stepElectricField() {
     for (int mm = 1; mm < M-1; ++mm) {
         for (int nn = 1; nn < N-1; ++nn) {
-            E_z[mm][nn] = C_eze[mm][nn] * E_z[mm][nn] + 
-                C_ezh[mm][nn] * ((H_y[mm][nn] - H_y[mm-1][nn]) - (H_x[mm][nn] - H_x[mm][nn-1]));
+            E_z.get(mm, nn) = C_eze.get(mm, nn) * E_z.get(mm, nn) + 
+                C_ezh.get(mm, nn) * ((H_y.get(mm, nn) - H_y.get(mm-1, nn)) - (H_x.get(mm, nn) - H_x.get(mm, nn-1)));
         }
     }
 }
@@ -22,14 +20,15 @@ void Simulation::stepElectricField() {
 void Simulation::stepMagneticField() {
     for (int mm = 0; mm < M; ++mm) {
         for (int nn = 0; nn < N-1; ++nn) {
-            H_x[mm][nn] = C_hxh[mm][nn] * H_x[mm][nn] - 
-                C_hxe[mm][nn] * (E_z[mm][nn+1] - E_z[mm][nn]);
+            H_x.get(mm, nn) = C_hxh.get(mm, nn) * H_x.get(mm, nn) - 
+                C_hxe.get(mm, nn) * (E_z.get(mm, nn+1) - E_z.get(mm,nn));
         }
     } 
+
     for (int mm = 0; mm < M-1; ++mm) {
         for (int nn = 0; nn < N; ++nn) {
-            H_y[mm][nn] = C_hyh[mm][nn] * H_y[mm][nn] +
-                C_hye[mm][nn] * (E_z[mm+1][nn] - E_z[mm][nn]);
+            H_y.get(mm, nn) = C_hyh.get(mm, nn) * H_y.get(mm, nn) +
+                C_hye.get(mm, nn) * (E_z.get(mm+1, nn) - E_z.get(mm, nn));
         }
     } 
 }
@@ -39,37 +38,28 @@ void Simulation::stepRickertSource(DECIMAL time, DECIMAL location) {
     DECIMAL arg = std::numbers::pi * ((Cdtds * time - location) / 19.0);
     arg *= arg;
     arg = (1.0 - 2.0 * arg) * exp(-arg);
-    E_z[M/2][N/2] = arg;
+    E_z.get(M/2, N/2) = arg;
 }
 
 void Simulation::initializeCoefficientMatrix() {
-    C_eze = std::vector<std::vector<DECIMAL>>(M, std::vector<DECIMAL>(N, 0));
-    C_ezh = std::vector<std::vector<DECIMAL>>(M, std::vector<DECIMAL>(N, 0));
-
-    C_hxh = std::vector<std::vector<DECIMAL>>(M, std::vector<DECIMAL>(N-1, 0));
-    C_hxe = std::vector<std::vector<DECIMAL>>(M, std::vector<DECIMAL>(N-1, 0));
-
-    C_hyh = std::vector<std::vector<DECIMAL>>(M-1, std::vector<DECIMAL>(N, 0));
-    C_hye = std::vector<std::vector<DECIMAL>>(M-1, std::vector<DECIMAL>(N, 0));
-
     for (int mm = 0; mm < M; ++mm) {
         for (int nn = 0; nn < N; ++nn) {
-            C_eze[mm][nn] = 1.0;
-            C_ezh[mm][nn] = Cdtds * imp0;
+            C_eze.get(mm, nn) = 1.0;
+            C_ezh.get(mm, nn) = Cdtds * imp0;
         }
     }
 
     for (int mm = 0; mm < M; ++mm) {
         for (int nn = 0; nn < N-1; ++nn) {
-            C_hxh[mm][nn] = 1.0;
-            C_hxe[mm][nn] = Cdtds / imp0;
+            C_hxh.get(mm, nn) = 1.0;
+            C_hxe.get(mm, nn) = Cdtds / imp0;
         }
     }
 
     for (int mm = 0; mm < M-1; ++mm) {
         for (int nn = 0; nn < N; ++nn) {
-            C_hyh[mm][nn] = 1.0;
-            C_hye[mm][nn] = Cdtds / imp0;
+            C_hyh.get(mm, nn) = 1.0;
+            C_hye.get(mm, nn) = Cdtds / imp0;
         }
     }
 }

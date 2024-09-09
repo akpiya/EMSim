@@ -1,10 +1,9 @@
 #ifndef SIMULATION_HPP
 #define SIMULATION_HPP
 
-#include <vector> 
 #include <cmath>
 
-#define DECIMAL float
+#include "Linear2DVector.hpp"
 
 class Simulation {
 public:
@@ -16,25 +15,23 @@ public:
     DECIMAL Cdtds{1.0f / (DECIMAL) sqrt(2.0f)};
     int maxTime{300};
 
-    std::vector<std::vector<DECIMAL>> E_z;
-    std::vector<std::vector<DECIMAL>> H_x;
-    std::vector<std::vector<DECIMAL>> H_y;
+    Linear2DVector E_z;
+    Linear2DVector H_x;
+    Linear2DVector H_y;
 
     void stepElectricField();
     void stepMagneticField();
     void stepRickertSource(DECIMAL time, DECIMAL location);
 
 private:
-    std::vector<std::vector<DECIMAL>> C_hxh;
-    std::vector<std::vector<DECIMAL>> C_hxe;
-    std::vector<std::vector<DECIMAL>> C_hyh;
-    std::vector<std::vector<DECIMAL>> C_hye;
-    std::vector<std::vector<DECIMAL>> C_eze;
-    std::vector<std::vector<DECIMAL>> C_ezh;
+    Linear2DVector C_hxh;
+    Linear2DVector C_hxe;
+    Linear2DVector C_hyh;
+    Linear2DVector C_hye;
+    Linear2DVector C_eze;
+    Linear2DVector C_ezh;
 
     void initializeCoefficientMatrix();
-
-
 };
 
 #endif

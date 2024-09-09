@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window/WindowStyle.hpp>
-#include <Simulation.hpp>
+
+#include "Simulation.hpp"
 
 #include <chrono>
 #include <iostream>
@@ -35,6 +36,7 @@ sf::Color gradientRedBlue(double value) {
     }
     return sf::Color(r, g, b);
 }
+
 
 sf::VertexArray createVertexArray() {
     sf::VertexArray vertices(sf::Triangles);
@@ -113,7 +115,7 @@ int main() {
         for (int mm = 0; mm < M; ++mm) {
             for (int nn = 0; nn < N; ++nn) {
                 int idx = 6 * (mm * N + nn);
-                sf::Color cellColor = gradientRedBlue(sim.E_z[mm][nn]);
+                sf::Color cellColor = gradientRedBlue(sim.E_z.get(mm, nn));
                 for (int offset = 0; offset < 6; ++offset) {
                     vertices[idx + offset].color = cellColor;
                 }
