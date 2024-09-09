@@ -57,8 +57,19 @@ sf::VertexArray createVertexArray() {
 }
 
 
-int main()
-{
+int main() {
+    sf::Texture playTexture, pauseTexture;
+    sf::Sprite runningSprite;
+
+    if (!playTexture.loadFromFile("../assets/playicon.png") || !pauseTexture.loadFromFile("../assets/pauseicon.png")) {
+        std::cout << "Texture Loading Error" << std::endl;
+        return 0;
+    }
+    
+    runningSprite.setTexture(playTexture);
+    runningSprite.setPosition(sf::Vector2f(0.f, 0.f));
+    runningSprite.setColor(sf::Color(255, 255, 255, 255));
+
     auto start = std::chrono::high_resolution_clock::now();
 
     sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "EM Sim", sf::Style::Titlebar | sf::Style::Close);
@@ -81,6 +92,11 @@ int main()
             else if (event.type == sf::Event::KeyPressed) {
                 if (event.key.code == sf::Keyboard::Space) {
                     paused = not paused;
+                    if (paused) {
+                        runningSprite.setTexture(pauseTexture);
+                    } else {
+                        runningSprite.setTexture(playTexture);
+                    }
                 }
             }
         }
@@ -103,8 +119,8 @@ int main()
                 }
             }
         }
-
         window.draw(vertices);
+        window.draw(runningSprite);
         window.display();
     }
 
