@@ -1,11 +1,11 @@
 #include "Simulation.hpp"
 #include <numbers>
 
-Simulation::Simulation(int m, int n, double deltaX, double deltaY, double deltaT)
+Simulation::Simulation(int m, int n, DECIMAL deltaX, DECIMAL deltaY, DECIMAL deltaT)
     : M(m), N(n), deltaX(deltaX), deltaY(deltaY), deltaT(deltaT) {
-    E_z = std::vector<std::vector<double>>(M, std::vector<double>(N, 0));
-    H_x = std::vector<std::vector<double>>(M, std::vector<double>(N-1, 0));
-    H_y = std::vector<std::vector<double>>(M-1, std::vector<double>(N, 0));
+    E_z = std::vector<std::vector<DECIMAL>>(M, std::vector<DECIMAL>(N, 0));
+    H_x = std::vector<std::vector<DECIMAL>>(M, std::vector<DECIMAL>(N-1, 0));
+    H_y = std::vector<std::vector<DECIMAL>>(M-1, std::vector<DECIMAL>(N, 0));
 
     initializeCoefficientMatrix();
 }
@@ -34,23 +34,23 @@ void Simulation::stepMagneticField() {
     } 
 }
 
-void Simulation::stepRickertSource(double time, double location) {
+void Simulation::stepRickertSource(DECIMAL time, DECIMAL location) {
     // same source as given in the book
-    double arg = std::numbers::pi * ((Cdtds * time - location) / 19.0);
+    DECIMAL arg = std::numbers::pi * ((Cdtds * time - location) / 19.0);
     arg *= arg;
     arg = (1.0 - 2.0 * arg) * exp(-arg);
     E_z[M/2][N/2] = arg;
 }
 
 void Simulation::initializeCoefficientMatrix() {
-    C_eze = std::vector<std::vector<double>>(M, std::vector<double>(N, 0));
-    C_ezh = std::vector<std::vector<double>>(M, std::vector<double>(N, 0));
+    C_eze = std::vector<std::vector<DECIMAL>>(M, std::vector<DECIMAL>(N, 0));
+    C_ezh = std::vector<std::vector<DECIMAL>>(M, std::vector<DECIMAL>(N, 0));
 
-    C_hxh = std::vector<std::vector<double>>(M, std::vector<double>(N-1, 0));
-    C_hxe = std::vector<std::vector<double>>(M, std::vector<double>(N-1, 0));
+    C_hxh = std::vector<std::vector<DECIMAL>>(M, std::vector<DECIMAL>(N-1, 0));
+    C_hxe = std::vector<std::vector<DECIMAL>>(M, std::vector<DECIMAL>(N-1, 0));
 
-    C_hyh = std::vector<std::vector<double>>(M-1, std::vector<double>(N, 0));
-    C_hye = std::vector<std::vector<double>>(M-1, std::vector<double>(N, 0));
+    C_hyh = std::vector<std::vector<DECIMAL>>(M-1, std::vector<DECIMAL>(N, 0));
+    C_hye = std::vector<std::vector<DECIMAL>>(M-1, std::vector<DECIMAL>(N, 0));
 
     for (int mm = 0; mm < M; ++mm) {
         for (int nn = 0; nn < N; ++nn) {
@@ -73,4 +73,3 @@ void Simulation::initializeCoefficientMatrix() {
         }
     }
 }
-
