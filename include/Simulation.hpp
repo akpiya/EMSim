@@ -20,7 +20,7 @@ public:
 
     void stepElectricField();
     void stepMagneticField();
-    void stepSource(double time, double location);
+    void stepRickertSource(double time, double location);
 
 private:
     std::vector<std::vector<double>> C_hxh;

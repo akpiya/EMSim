@@ -14,7 +14,7 @@ void Simulation::stepElectricField() {
     for (int mm = 1; mm < M-1; ++mm) {
         for (int nn = 1; nn < N-1; ++nn) {
             E_z[mm][nn] = C_eze[mm][nn] * E_z[mm][nn] + 
-                C_ezh[mm][nn] * ((H_y[mm][nn] - H_y[mm-1][nn]) - H_x[mm][nn] - H_x[mm][nn-1]);
+                C_ezh[mm][nn] * ((H_y[mm][nn] - H_y[mm-1][nn]) - (H_x[mm][nn] - H_x[mm][nn-1]));
         }
     }
 }
@@ -34,7 +34,7 @@ void Simulation::stepMagneticField() {
     } 
 }
 
-void Simulation::stepSource(double time, double location) {
+void Simulation::stepRickertSource(double time, double location) {
     // same source as given in the book
     double arg = std::numbers::pi * ((Cdtds * time - location) / 19.0);
     arg *= arg;
