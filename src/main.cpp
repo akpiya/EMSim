@@ -9,8 +9,8 @@
 const int windowWidth = 1000;
 const int windowHeight = 800;
 
-const int M = 301;
-const int N = 301;
+const int M = 401;
+const int N = 401;
 const int vertexArrayWidth = N + 1;
 const int vertexArrayHeight = M + 1;
 
@@ -21,11 +21,10 @@ const double deltaX = 0.1;
 const double deltaY = 0.1;
 const double deltaT = 0.05;
 
-bool paused = false;
 
 sf::Color gradientRedBlue(double value) {
     // Assume color values are [-3, 3]
-    double range = 0.5;
+    double range = 0.3;
     value = std::clamp(value, -range, range);
     double fraction = abs(value) / range;
     int r(0), g(0), b(0);
@@ -62,6 +61,9 @@ sf::VertexArray createVertexArray() {
 int main() {
     sf::Texture playTexture, pauseTexture;
     sf::Sprite runningSprite;
+    bool paused = false;
+    bool leftIsPressed = false;
+    bool rightIsPressed = false;
 
     if (!playTexture.loadFromFile("../assets/playicon.png") || !pauseTexture.loadFromFile("../assets/pauseicon.png")) {
         std::cout << "Texture Loading Error" << std::endl;
@@ -81,17 +83,15 @@ int main() {
 
     double time = 0.0;
 
-    while (window.isOpen())
-    {
+    while (window.isOpen()) {
         if (time >= 100) {
             break;
         }
         sf::Event event;
-        while (window.pollEvent(event))
-        {
+        while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
-            else if (event.type == sf::Event::KeyPressed) {
+            if (event.type == sf::Event::KeyPressed) {
                 if (event.key.code == sf::Keyboard::Space) {
                     paused = not paused;
                     if (paused) {
@@ -101,9 +101,19 @@ int main() {
                     }
                 }
             }
+            if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+                leftIsPressed = true;
+            }
+            else if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+                leftIsPressed = false;
+            }
+            if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Right) {
+                rightIsPressed = true;
+            }
+            else if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Right) {
+                rightIsPressed = false;
+            }
         }
-
-        window.clear();
 
         if (!paused) {
             sim.stepMagneticField();
@@ -112,15 +122,44 @@ int main() {
             time += deltaT;
         }
 
+        sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+        if (leftIsPressed) {
+            for (int rowOffset = -1; rowOffset <= 1; rowOffset++) {
+                for (int colOffset = -1; colOffset <= 1; colOffset ++) {
+                    int rowIdx = static_cast<int>(static_cast<float>(mousePos.y) / cellHeight) + rowOffset;
+                    int colIdx = static_cast<int>(static_cast<float>(mousePos.x) / cellWidth) + colOffset;
+                    if (0 <= rowIdx && rowIdx < M && 0 <= colIdx && colIdx < N)
+                        sim.addConductorAt(rowIdx, colIdx);
+                }
+            }
+        }
+
+        if (rightIsPressed) {
+            for (int rowOffset = -1; rowOffset <= 1; rowOffset++) {
+                for (int colOffset = -1; colOffset <= 1; colOffset ++) {
+                    int rowIdx = static_cast<int>(static_cast<float>(mousePos.y) / cellHeight) + rowOffset;
+                    int colIdx = static_cast<int>(static_cast<float>(mousePos.x) / cellWidth) + colOffset;
+                    if (0 <= rowIdx && rowIdx < M && 0 <= colIdx && colIdx < N)
+                        sim.removeConductorAt(rowIdx, colIdx);
+                }
+            }
+        }
+
         for (int mm = 0; mm < M; ++mm) {
             for (int nn = 0; nn < N; ++nn) {
                 int idx = 6 * (mm * N + nn);
                 sf::Color cellColor = gradientRedBlue(sim.E_z.get(mm, nn));
+                if (sim.conductorField.get(mm, nn) > 0.5) {
+                    cellColor = sf::Color::Magenta;
+                }
+
                 for (int offset = 0; offset < 6; ++offset) {
                     vertices[idx + offset].color = cellColor;
                 }
             }
         }
+
+        window.clear();
         window.draw(vertices);
         window.draw(runningSprite);
         window.display();

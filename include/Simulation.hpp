@@ -5,15 +5,20 @@
 
 #include "Linear2DVector.hpp"
 
+
 class Simulation {
 public:
     Simulation(int m, int n, DECIMAL deltaX, DECIMAL deltaY, DECIMAL deltaT);
 
     DECIMAL deltaX, deltaY, deltaT;
     int M, N;
+
     DECIMAL imp0{377.0f};
     DECIMAL Cdtds{1.0f / (DECIMAL) sqrt(2.0f)};
     int maxTime{300};
+
+    // User inputted boundary conditions
+    Linear2DVector conductorField;
 
     Linear2DVector E_z;
     Linear2DVector H_x;
@@ -22,6 +27,8 @@ public:
     void stepElectricField();
     void stepMagneticField();
     void stepRickertSource(DECIMAL time, DECIMAL location);
+    void addConductorAt(int i, int j);
+    void removeConductorAt(int i, int j);
 
 private:
     Linear2DVector C_hxh;
