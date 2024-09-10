@@ -67,10 +67,18 @@ sf::VertexArray createVertexArray() {
     return vertices;
 }
 
+int convertPixelToIndexX(int x) {
+    return static_cast<int>(static_cast<double>(x) / cellWidth);
+}
+
+int convertPixelToIndexY(int y) {
+    return static_cast<int>(static_cast<double>(y) / cellHeight);
+}
 
 int main() {
     sf::Texture playTexture, pauseTexture;
     sf::Sprite runningSprite;
+    sf::Vector2i prevMousePos;
     bool paused = false;
     bool leftIsPressed = false;
     bool rightIsPressed = false;
@@ -133,28 +141,27 @@ int main() {
         }
 
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+        int low_x = convertPixelToIndexX(std::min(prevMousePos.x, mousePos.x));
+        int high_x = convertPixelToIndexX(std::max(prevMousePos.x, mousePos.x));
+        int low_y = convertPixelToIndexY(std::min(prevMousePos.y, mousePos.y));
+        int high_y = convertPixelToIndexY(std::max(prevMousePos.y, mousePos.y));
+
         if (leftIsPressed) {
-            for (int rowOffset = -1; rowOffset <= 1; rowOffset++) {
-                for (int colOffset = -1; colOffset <= 1; colOffset ++) {
-                    int rowIdx = static_cast<int>(static_cast<float>(mousePos.y) / cellHeight) + rowOffset;
-                    int colIdx = static_cast<int>(static_cast<float>(mousePos.x) / cellWidth) + colOffset;
-                    if (0 <= rowIdx && rowIdx < M && 0 <= colIdx && colIdx < N)
-                        sim.addConductorAt(rowIdx, colIdx);
+
+            for (int i = low_x; i <= high_x; i++) {
+                for (int j = low_y; j <= high_y; j++) {
+                    sim.addConductorAt(j, i);
                 }
             }
         }
 
         if (rightIsPressed) {
-            for (int rowOffset = -1; rowOffset <= 1; rowOffset++) {
-                for (int colOffset = -1; colOffset <= 1; colOffset ++) {
-                    int rowIdx = static_cast<int>(static_cast<float>(mousePos.y) / cellHeight) + rowOffset;
-                    int colIdx = static_cast<int>(static_cast<float>(mousePos.x) / cellWidth) + colOffset;
-                    if (0 <= rowIdx && rowIdx < M && 0 <= colIdx && colIdx < N)
-                        sim.removeConductorAt(rowIdx, colIdx);
+            for (int i = low_x; i <= high_x; i++) {
+                for (int j = low_y; j <= high_y; j++) {
+                    sim.removeConductorAt(j, i);
                 }
             }
         }
-
 
         for (int mm = 0; mm < M; ++mm) {
             for (int nn = 0; nn < N; ++nn) {
@@ -169,7 +176,7 @@ int main() {
                 }
             }
         }
-
+        prevMousePos = mousePos;
         window.clear();
         window.draw(vertices);
         window.draw(runningSprite);
