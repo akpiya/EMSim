@@ -12,7 +12,7 @@ Simulation::Simulation(int m, int n, DECIMAL deltaX, DECIMAL deltaY, DECIMAL del
 void Simulation::stepElectricField() {
     for (int mm = 1; mm < M-1; ++mm) {
         for (int nn = 1; nn < N-1; ++nn) {
-            if (conductorField.get(mm, nn) > 0.5)
+            if (conductorField.get(mm, nn) == 1)
                 E_z.get(mm, nn) = 0;
             else
                 E_z.get(mm, nn) = C_eze.get(mm, nn) * E_z.get(mm, nn) + 
@@ -46,11 +46,11 @@ void Simulation::stepRickertSource(DECIMAL time, DECIMAL location) {
 }
 
 void Simulation::addConductorAt(int i, int j) {
-    conductorField.get(i, j) = 1.0;
+    conductorField.get(i, j) = 1;
 }
 
 void Simulation::removeConductorAt(int i, int j) {
-    conductorField.get(i, j) = 0.0;
+    conductorField.get(i, j) = 0;
 }
 
 void Simulation::initializeCoefficientMatrix() {

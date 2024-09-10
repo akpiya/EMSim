@@ -4,19 +4,24 @@
 
 #define DECIMAL float 
 
+template <typename T>
 class Linear2DVector {
 
 public:
-    std::vector<DECIMAL> data;
+    std::vector<T> data;
 
-    Linear2DVector(int rows, int cols);
+    Linear2DVector(int rows, int cols) {
+        rows_ = rows;
+        cols_ = cols;
+        data = std::vector<T>(rows * cols);
+    }
 
-    DECIMAL& get(int i, int j);
+    T& get(int i, int j) {
+        return data[i* cols_ + j];
+    }
 
 private:
     int rows_, cols_;
-
-
 };
 
 #endif

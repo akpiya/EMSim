@@ -9,8 +9,8 @@
 const int windowWidth = 1000;
 const int windowHeight = 800;
 
-const int M = 401;
-const int N = 401;
+const int M = 301;
+const int N = 301;
 const int vertexArrayWidth = N + 1;
 const int vertexArrayHeight = M + 1;
 
@@ -23,16 +23,26 @@ const double deltaT = 0.05;
 
 
 sf::Color gradientRedBlue(double value) {
-    // Assume color values are [-3, 3]
     double range = 0.3;
     value = std::clamp(value, -range, range);
-    double fraction = abs(value) / range;
+    double fraction = sqrt(abs(value) / range);
     int r(0), g(0), b(0);
     if (value > 0) {
         r = static_cast<int> (fraction * 255);
     } else {
         b = static_cast<int> (fraction * 255);
     }
+    return sf::Color(r, g, b);
+}
+
+
+sf::Color gradientGrayScale(double value) {
+    double range = 0.3;
+    value = std::clamp(value, -range, range);
+    double fraction = value / (2 * range);
+    int r = static_cast<int>(fraction * 255) + 127;
+    int g = static_cast<int>(fraction * 255) + 127;
+    int b = static_cast<int>(fraction * 255) + 127;
     return sf::Color(r, g, b);
 }
 
@@ -145,11 +155,12 @@ int main() {
             }
         }
 
+
         for (int mm = 0; mm < M; ++mm) {
             for (int nn = 0; nn < N; ++nn) {
                 int idx = 6 * (mm * N + nn);
                 sf::Color cellColor = gradientRedBlue(sim.E_z.get(mm, nn));
-                if (sim.conductorField.get(mm, nn) > 0.5) {
+                if (sim.conductorField.get(mm, nn) == 1) {
                     cellColor = sf::Color::Magenta;
                 }
 

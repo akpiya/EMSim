@@ -18,11 +18,11 @@ public:
     int maxTime{300};
 
     // User inputted boundary conditions
-    Linear2DVector conductorField;
+    Linear2DVector<char> conductorField;
 
-    Linear2DVector E_z;
-    Linear2DVector H_x;
-    Linear2DVector H_y;
+    Linear2DVector<DECIMAL> E_z;
+    Linear2DVector<DECIMAL> H_x;
+    Linear2DVector<DECIMAL> H_y;
 
     void stepElectricField();
     void stepMagneticField();
@@ -31,12 +31,12 @@ public:
     void removeConductorAt(int i, int j);
 
 private:
-    Linear2DVector C_hxh;
-    Linear2DVector C_hxe;
-    Linear2DVector C_hyh;
-    Linear2DVector C_hye;
-    Linear2DVector C_eze;
-    Linear2DVector C_ezh;
+    Linear2DVector<DECIMAL> C_hxh;
+    Linear2DVector<DECIMAL> C_hxe;
+    Linear2DVector<DECIMAL> C_hyh;
+    Linear2DVector<DECIMAL> C_hye;
+    Linear2DVector<DECIMAL> C_eze;
+    Linear2DVector<DECIMAL> C_ezh;
 
     void initializeCoefficientMatrix();
 };
