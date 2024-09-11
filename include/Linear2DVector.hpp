@@ -1,5 +1,10 @@
 #ifndef LINEAR2DVECTOR_HPP
 #define LINEAR2DVECTOR_HPP
+
+// Class to access a grid of elements where
+// the data is stored as one contiguous block.
+// Makes it easier to do GPU processing.
+
 #include <vector>
 
 #define DECIMAL float 
