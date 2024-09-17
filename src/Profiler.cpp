@@ -1,6 +1,5 @@
 #include <chrono>
 
-
 class Profiler {
 public:
     int entries;

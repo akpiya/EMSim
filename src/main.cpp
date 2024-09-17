@@ -1,10 +1,17 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window/WindowStyle.hpp>
 
-#include "Simulation.hpp"
-
 #include <chrono>
 #include <iostream>
+
+#include "Simulation.hpp"
+#include "Profiler.cpp"
+
+#ifdef DEBUG
+    #define DEBUG_CODE(code) code
+#else
+    #define DEBUG_CODE(code)
+#endif
 
 const int windowWidth = 1000;
 const int windowHeight = 800;
@@ -76,6 +83,8 @@ int convertPixelToIndexY(int y) {
 }
 
 int main() {
+    DEBUG_CODE(Profiler stepProfiler;Profiler drawProfiler;);
+    
     sf::Texture playTexture, pauseTexture;
     sf::Sprite runningSprite;
     sf::Vector2i prevMousePos;
@@ -134,10 +143,12 @@ int main() {
         }
 
         if (!paused) {
+            DEBUG_CODE(stepProfiler.start(););
             sim.stepMagneticField();
             sim.stepElectricField();
             sim.stepRickertSource(time, 0.0);
             time += deltaT;
+            DEBUG_CODE(stepProfiler.stop(););
         }
 
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
@@ -146,6 +157,7 @@ int main() {
         int low_y = convertPixelToIndexY(std::min(prevMousePos.y, mousePos.y));
         int high_y = convertPixelToIndexY(std::max(prevMousePos.y, mousePos.y));
 
+        DEBUG_CODE(drawProfiler.start(););
         if (leftIsPressed) {
 
             for (int i = low_x; i <= high_x; i++) {
@@ -176,6 +188,8 @@ int main() {
                 }
             }
         }
+
+        DEBUG_CODE(drawProfiler.stop(););
         prevMousePos = mousePos;
         window.clear();
         window.draw(vertices);
@@ -183,9 +197,14 @@ int main() {
         window.display();
     }
 
+    DEBUG_CODE(
+        std::cout << "Stepping took: " << stepProfiler.getAverageDuration() << std::endl;
+        std::cout << "Drawing took: " << drawProfiler.getAverageDuration() << std::endl;
+    );
+
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-    std::cout << "Time Taken: " << duration.count() << " microseconds" << std::endl;
+    std::cout << "Time Taken: " << duration << std::endl;
 
     return 0;
 }

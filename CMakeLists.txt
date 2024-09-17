@@ -18,12 +18,7 @@ FetchContent_MakeAvailable(SFML)
 
 
 add_executable(main src/main.cpp src/Simulation.cpp)
-add_executable(debug_main src/profile_main.cpp src/Simulation.cpp src/Profiler.cpp)
 
 target_link_libraries(main PRIVATE sfml-graphics)
 target_include_directories(main PUBLIC ${PROJECT_SOURCE_DIR}/include)
-
-target_link_libraries(debug_main PRIVATE sfml-graphics)
-target_include_directories(debug_main PUBLIC ${PROJECT_SOURCE_DIR}/include)
-
-
+target_include_directories(main PUBLIC ${PROJECT_SOURCE_DIR}/lib/metal-cpp)

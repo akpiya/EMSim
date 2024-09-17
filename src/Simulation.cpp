@@ -1,5 +1,4 @@
 #include <numbers>
-
 #include "Simulation.hpp"
 #include "Linear2DVector.hpp"
 
