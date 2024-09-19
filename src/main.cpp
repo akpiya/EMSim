@@ -16,8 +16,8 @@
 const int windowWidth = 1000;
 const int windowHeight = 800;
 
-const int M = 301;
-const int N = 301;
+const int M = 1000;
+const int N = 1000;
 const int vertexArrayWidth = N + 1;
 const int vertexArrayHeight = M + 1;
 
@@ -144,8 +144,8 @@ int main() {
 
         if (!paused) {
             DEBUG_CODE(stepProfiler.start(););
-            sim.stepMagneticField();
             sim.stepElectricField();
+            sim.stepMagneticField();
             sim.stepRickertSource(time, 0.0);
             time += deltaT;
             DEBUG_CODE(stepProfiler.stop(););

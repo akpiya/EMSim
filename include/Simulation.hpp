@@ -1,13 +1,9 @@
 #ifndef SIMULATION_HPP
 #define SIMULATION_HPP
 
-#define NS_PRIVATE_IMPLEMENTATION
-#define CA_PRIVATE_IMPLEMENTATION
-#define MTL_PRIVATE_IMPLEMENTATION
-
-#include <Foundation/Foundation.hpp>
 #include <Metal/Metal.hpp>
 #include <QuartzCore/QuartzCore.hpp>
+#include <Foundation/Foundation.hpp>
 
 #include <cmath>
 
@@ -17,6 +13,8 @@
 class Simulation {
 public:
     Simulation(int m, int n, DECIMAL deltaX, DECIMAL deltaY, DECIMAL deltaT);
+
+    ~Simulation();
 
     DECIMAL deltaX, deltaY, deltaT;
     int M, N;
@@ -38,6 +36,10 @@ public:
     void addConductorAt(int i, int j);
     void removeConductorAt(int i, int j);
 
+    void gpuStepElectricField();
+    void gpuStepMagneticField();
+
+
 private:
     Linear2DVector<DECIMAL> C_hxh;
     Linear2DVector<DECIMAL> C_hxe;
@@ -47,6 +49,26 @@ private:
     Linear2DVector<DECIMAL> C_ezh;
 
     void initializeCoefficientMatrix();
+
+    MTL::Device *device;
+    MTL::Buffer *bufferE_z;
+    MTL::Buffer *bufferH_x;
+    MTL::Buffer *bufferH_y;
+
+    MTL::Buffer *bufferC_hxh;
+    MTL::Buffer *bufferC_hxe;
+    MTL::Buffer *bufferC_hyh;
+    MTL::Buffer *bufferC_hye;
+    MTL::Buffer *bufferC_eze;
+    MTL::Buffer *bufferC_ezh;
+    MTL::Buffer *bufferM;
+    MTL::Buffer *bufferN;
+
+    MTL::Library *library;
+    NS::Error *error;
+    MTL::Function *eFieldFunction;
+    MTL::Function *hxFieldFunction;
+    MTL::Function *hyFieldFunction;
 };
 
 #endif
