@@ -1,5 +1,10 @@
 #include <numbers>
 #include <algorithm>
+#include <cstring>
+
+#define NS_PRIVATE_IMPLEMENTATION
+#define CA_PRIVATE_IMPLEMENTATION
+#define MTL_PRIVATE_IMPLEMENTATION
 
 #include "Simulation.hpp"
 #include "Linear2DVector.hpp"
@@ -25,7 +30,6 @@ const char *computeCode = R"(
             E_z[idx] = C_eze[idx] * E_z[idx] + C_ezh[idx] * ((H_y[idx] - H_y[idx - N]) - (H_x[idx] - H_x[idx - 1]));
         }
     }
-    
     
     kernel void updateMagneticFieldX(
         device const float* C_hxh [[ buffer(0) ]],
@@ -55,9 +59,10 @@ const char *computeCode = R"(
 
 Simulation::Simulation(int m, int n, DECIMAL deltaX, DECIMAL deltaY, DECIMAL deltaT)
     : M(m), N(n), deltaX(deltaX), deltaY(deltaY), deltaT(deltaT), E_z(M, N), H_x(M, N-1), H_y(M-1, N),
-        C_eze(M, N), C_ezh(M, N), C_hxh(M, N-1), C_hxe(M, N-1), C_hyh(M-1, N), C_hye(M-1, N), conductorField(M, N){
+        C_eze(M, N), C_ezh(M, N), C_hxh(M, N-1), C_hxe(M, N-1), C_hyh(M-1, N), C_hye(M-1, N), conductorField(M, N) {
     initializeCoefficientMatrix();
 
+    /*
     device = MTL::CreateSystemDefaultDevice();
     
     bufferM = device->newBuffer(&M, sizeof(int), MTL::ResourceStorageModeShared);
@@ -75,18 +80,17 @@ Simulation::Simulation(int m, int n, DECIMAL deltaX, DECIMAL deltaY, DECIMAL del
     bufferC_hyh = device->newBuffer(C_hyh.data.data(), C_hyh.data.size() * sizeof(DECIMAL), MTL::ResourceStorageModeShared);
 
 
-    NS::Error *pErr = nullptr;
-    library = device->newLibrary(NS::String::string(computeCode, NS::UTF8StringEncoding), nullptr, &pErr);
+    error = nullptr;
+    library = device->newLibrary(NS::String::string(computeCode, NS::UTF8StringEncoding), nullptr, &error);
     error = nullptr;
 
     eFieldFunction = library->newFunction(NS::String::string("updateElectricField", NS::UTF8StringEncoding)); 
     hxFieldFunction = library->newFunction(NS::String::string("updateMagneticFieldX", NS::UTF8StringEncoding)); 
-    hyFieldFunction = library->newFunction(NS::String::string("updateMagneticFieldY", NS::UTF8StringEncoding)); 
+    hyFieldFunction = library->newFunction(NS::String::string("updateMagneticFieldY", NS::UTF8StringEncoding));  */
 }
 
 
 void Simulation::gpuStepElectricField() {
-    /*
     error = nullptr;
     MTL::ComputePipelineState *pipelineState = device->newComputePipelineState(eFieldFunction, &error);
     MTL::CommandQueue *commandQueue = device->newCommandQueue();
@@ -113,16 +117,78 @@ void Simulation::gpuStepElectricField() {
     commandBuffer->commit();
     commandBuffer->waitUntilCompleted();
 
+    std::memcpy(bufferE_z->contents(), &E_z.data, sizeof(DECIMAL) * E_z.data.size());
+
     pipelineState->release();
     commandQueue->release();
     commandBuffer->release();
     encoder->release();
-    */
 }
 
 
 void Simulation::gpuStepMagneticField() {
+    error = nullptr;
+    MTL::ComputePipelineState *xpipelineState = device->newComputePipelineState(hxFieldFunction, &error);
+    MTL::ComputePipelineState *ypipelineState = device->newComputePipelineState(hyFieldFunction, &error);
 
+    MTL::CommandQueue *xcommandQueue = device->newCommandQueue();
+    MTL::CommandQueue *ycommandQueue = device->newCommandQueue();
+
+    MTL::CommandBuffer *xcommandBuffer = xcommandQueue->commandBuffer();
+    MTL::CommandBuffer *ycommandBuffer = ycommandQueue->commandBuffer();
+
+    MTL::ComputeCommandEncoder *xencoder = xcommandBuffer->computeCommandEncoder();
+    MTL::ComputeCommandEncoder *yencoder = ycommandBuffer->computeCommandEncoder();
+
+    xencoder->setComputePipelineState(xpipelineState);
+    xencoder->setBuffer(bufferC_hxh, 0, 0);
+    xencoder->setBuffer(bufferC_hxe, 0, 1);
+    xencoder->setBuffer(bufferE_z, 0, 2);
+    xencoder->setBuffer(bufferH_x, 0, 3);
+    xencoder->setBuffer(bufferM, 0, 4);
+    xencoder->setBuffer(bufferN, 0, 5);
+
+    MTL::Size xgridSize = MTL::Size(M*(N-1), 1, 1);
+    auto max_threads = (int) xpipelineState->maxTotalThreadsPerThreadgroup();
+    MTL::Size xthreadGroupSize = MTL::Size(std::min(max_threads, M*(N-1)), 1, 1);
+
+    xencoder->dispatchThreads(xgridSize, xthreadGroupSize);
+    xencoder->endEncoding();
+
+    yencoder->setComputePipelineState(ypipelineState);
+    yencoder->setBuffer(bufferC_hyh, 0, 0);
+    yencoder->setBuffer(bufferC_hye, 0, 1);
+    yencoder->setBuffer(bufferE_z, 0, 2);
+    yencoder->setBuffer(bufferH_y, 0, 3);
+    yencoder->setBuffer(bufferM, 0, 4);
+    yencoder->setBuffer(bufferN, 0, 5);
+
+    MTL::Size ygridSize = MTL::Size((M-1)*N, 1, 1);
+    MTL::Size ythreadGroupSize = MTL::Size(std::min(max_threads, (M-1)*N), 1, 1);
+
+    yencoder->dispatchThreads(ygridSize, ythreadGroupSize);
+    yencoder->endEncoding();
+
+    xcommandBuffer->commit();
+    ycommandBuffer->commit();
+    
+    xcommandBuffer->waitUntilCompleted();
+    ycommandBuffer->waitUntilCompleted();
+
+    std::memcpy(bufferH_x->contents(), &H_x.data, sizeof(DECIMAL) * H_x.data.size());
+    std::memcpy(bufferH_y->contents(), &H_y.data, sizeof(DECIMAL) * H_y.data.size());
+    
+    xencoder->release();
+    yencoder->release();
+
+    xcommandBuffer->release();
+    ycommandBuffer->release();
+
+    xcommandQueue->release();
+    ycommandQueue->release();
+
+    xpipelineState->release();
+    ypipelineState->release();
 }
 
 
@@ -141,7 +207,6 @@ Simulation::~Simulation() {
     eFieldFunction->release();
     hxFieldFunction->release();
     hyFieldFunction->release();
-    error->release();
     library->release();
     device->release();
 };

@@ -10,7 +10,7 @@ include(FetchContent)
 FetchContent_Declare(
     SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
-    GIT_TAG 2.6.x
+    GIT_TAG 2.6.1
     GIT_SHALLOW ON
     EXCLUDE_FROM_ALL
     SYSTEM
@@ -43,6 +43,9 @@ add_executable(main src/main.cpp src/Simulation.cpp)
 #     ${QUARTZCORE}
 #     sfml-graphics
 # )
+
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+
 target_link_libraries(main sfml-graphics)
 
 target_include_directories(main PUBLIC
@@ -55,6 +58,6 @@ target_link_libraries(main
     "-framework QuartzCore"
     "-framework Foundation"
 )
+
 # add_custom_target(metal_shaders DEPENDS shaders.metallib)
 # add_dependencies(main metal_shaders)
-

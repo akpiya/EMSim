@@ -16,8 +16,8 @@
 const int windowWidth = 1000;
 const int windowHeight = 800;
 
-const int M = 1000;
-const int N = 1000;
+const int M = 101;
+const int N = 101;
 const int vertexArrayWidth = N + 1;
 const int vertexArrayHeight = M + 1;
 
@@ -41,6 +41,7 @@ sf::Color gradientRedBlue(double value) {
     }
     return sf::Color(r, g, b);
 }
+
 
 
 sf::Color gradientGrayScale(double value) {
@@ -74,13 +75,16 @@ sf::VertexArray createVertexArray() {
     return vertices;
 }
 
+
 int convertPixelToIndexX(int x) {
     return static_cast<int>(static_cast<double>(x) / cellWidth);
 }
 
+
 int convertPixelToIndexY(int y) {
     return static_cast<int>(static_cast<double>(y) / cellHeight);
 }
+
 
 int main() {
     DEBUG_CODE(Profiler stepProfiler;Profiler drawProfiler;);
@@ -145,8 +149,8 @@ int main() {
         if (!paused) {
             DEBUG_CODE(stepProfiler.start(););
             sim.stepElectricField();
-            sim.stepMagneticField();
             sim.stepRickertSource(time, 0.0);
+            sim.stepMagneticField();
             time += deltaT;
             DEBUG_CODE(stepProfiler.stop(););
         }
