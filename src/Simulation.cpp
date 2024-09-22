@@ -117,8 +117,6 @@ void Simulation::gpuStepElectricField() {
 
     commandBuffer->waitUntilCompleted();
 
-    std::memcpy(E_z.data.data(), bufferE_z->contents(), sizeof(DECIMAL) * E_z.data.size());
-
     pipelineState->release();
     commandQueue->release();
     commandBuffer->release();
@@ -171,13 +169,10 @@ void Simulation::gpuStepMagneticField() {
 
     xcommandBuffer->commit();
     ycommandBuffer->commit();
-    
+
     xcommandBuffer->waitUntilCompleted();
     ycommandBuffer->waitUntilCompleted();
 
-    std::memcpy(H_x.data.data(), bufferH_x->contents(), sizeof(DECIMAL) * H_x.data.size());
-    std::memcpy(H_y.data.data(), bufferH_y->contents(), sizeof(DECIMAL) * H_y.data.size());
-    
     xencoder->release();
     yencoder->release();
 

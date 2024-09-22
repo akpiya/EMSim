@@ -22,6 +22,7 @@ public:
     DECIMAL imp0{377.0f};
     DECIMAL Cdtds{1.0f / (DECIMAL) sqrt(2.0f)};
     int maxTime{300};
+    MTL::Buffer *bufferE_z;
 
     // User inputted boundary conditions
     Linear2DVector<char> conductorField;
@@ -51,7 +52,6 @@ private:
     void initializeCoefficientMatrix();
 
     MTL::Device *device;
-    MTL::Buffer *bufferE_z;
     MTL::Buffer *bufferH_x;
     MTL::Buffer *bufferH_y;
 

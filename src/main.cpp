@@ -181,10 +181,12 @@ int main() {
             }
         }
 
+        DECIMAL *gpuE_z = static_cast<DECIMAL*> (sim.bufferE_z->contents());
+
         for (int mm = 0; mm < M; ++mm) {
             for (int nn = 0; nn < N; ++nn) {
                 int idx = 6 * (mm * N + nn);
-                sf::Color cellColor = gradientRedBlue(sim.E_z.get(mm, nn));
+                sf::Color cellColor = gradientRedBlue(gpuE_z[mm * N + nn]);
                 if (sim.conductorField.get(mm, nn) == 1) {
                     cellColor = sf::Color::Magenta;
                 }

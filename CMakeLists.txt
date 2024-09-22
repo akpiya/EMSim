@@ -19,31 +19,6 @@ FetchContent_MakeAvailable(SFML)
 
 add_executable(main src/main.cpp src/Simulation.cpp)
 
-# add_custom_command(
-#     OUTPUT shaders.air
-#     COMMAND xcrun -sdk macosx metal -c ${CMAKE_SOURCE_DIR}/src/Compute.metal -o ${CMAKE_BINARY_DIR}/shaders.air
-#     MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/src/Compute.metal
-#     COMMENT "COMPILE METAL SHADER"
-# )
-#
-# add_custom_command(
-#     OUTPUT shaders.metallib
-#     COMMAND xcrun -sdk macosx metallib ${CMAKE_BINARY_DIR}/shaders.air -o ${CMAKE_BINARY_DIR}/shaders.metallib
-#     DEPENDS shaders.air
-#     COMMENT "Creating the library"
-# )
-#
-# find_library(METAL Metal REQUIRED)
-# find_library(FOUNDATION Foundation REQUIRED)
-# find_library(QUARTZCORE QuartzCore REQUIRED)
-#
-# target_link_libraries(main
-#     ${METAL}
-#     ${FOUNDATION}
-#     ${QUARTZCORE}
-#     sfml-graphics
-# )
-
 
 target_link_libraries(main sfml-graphics)
 
