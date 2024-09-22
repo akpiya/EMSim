@@ -63,7 +63,6 @@ Simulation::Simulation(int m, int n, DECIMAL deltaX, DECIMAL deltaY, DECIMAL del
     initializeCoefficientMatrix();
 
     device = MTL::CreateSystemDefaultDevice();
-    
     bufferM = device->newBuffer(&M, sizeof(int), MTL::ResourceStorageModeShared);
     bufferN = device->newBuffer(&N, sizeof(int), MTL::ResourceStorageModeShared);
 
@@ -77,7 +76,6 @@ Simulation::Simulation(int m, int n, DECIMAL deltaX, DECIMAL deltaY, DECIMAL del
     bufferC_hxh = device->newBuffer(C_hxh.data.data(), C_hxh.data.size() * sizeof(DECIMAL), MTL::ResourceStorageModeShared);
     bufferC_hye = device->newBuffer(C_hye.data.data(), C_hye.data.size() * sizeof(DECIMAL), MTL::ResourceStorageModeShared);
     bufferC_hyh = device->newBuffer(C_hyh.data.data(), C_hyh.data.size() * sizeof(DECIMAL), MTL::ResourceStorageModeShared);
-
 
     error = nullptr;
     library = device->newLibrary(NS::String::string(computeCode, NS::UTF8StringEncoding), nullptr, &error);

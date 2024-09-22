@@ -3,7 +3,7 @@
 
 #include <chrono>
 #include <iostream>
-
+#include <thread>
 #include "Simulation.hpp"
 #include "Profiler.cpp"
 
@@ -30,6 +30,8 @@ const double deltaX = 0.1;
 const double deltaY = 0.1;
 const double deltaT = 0.05;
 
+// multithreading constants
+const int NUMTHREADS = 10;
 
 sf::Color gradientRedBlue(double value) {
     double range = 0.3;
@@ -44,8 +46,6 @@ sf::Color gradientRedBlue(double value) {
     return sf::Color(r, g, b);
 }
 
-
-
 sf::Color gradientGrayScale(double value) {
     double range = 0.3;
     value = std::clamp(value, -range, range);
@@ -56,6 +56,17 @@ sf::Color gradientGrayScale(double value) {
     return sf::Color(r, g, b);
 }
 
+void copyToVertexArray(sf::VertexArray& vertexArray, int start, int end, DECIMAL *gpuEz) {
+    for (int i = start; i <= end; i++) { // assume start < end
+        sf::Color cellColor = gradientRedBlue(gpuEz[i]);
+        // if (conductorField.get(i / N, i % N) == 1) {
+        //     cellColor = sf::Color::Magenta;
+        // }
+        for(int offset = 0; offset < 6; offset++) {
+            vertexArray[6*i + offset].color = cellColor;
+        }
+    }
+}
 
 sf::VertexArray createVertexArray() {
     sf::VertexArray vertices(sf::Triangles);
@@ -182,20 +193,37 @@ int main() {
         }
 
         DECIMAL *gpuE_z = static_cast<DECIMAL*> (sim.bufferE_z->contents());
+        std::vector<std::thread> threads;
 
-        for (int mm = 0; mm < M; ++mm) {
-            for (int nn = 0; nn < N; ++nn) {
-                int idx = 6 * (mm * N + nn);
-                sf::Color cellColor = gradientRedBlue(gpuE_z[mm * N + nn]);
-                if (sim.conductorField.get(mm, nn) == 1) {
-                    cellColor = sf::Color::Magenta;
-                }
-
-                for (int offset = 0; offset < 6; ++offset) {
-                    vertices[idx + offset].color = cellColor;
-                }
-            }
+        for (int i = 0; i < NUMTHREADS; i++) {
+            int indicesPerThread = ceil((M * N) / ((double) NUMTHREADS));
+            threads.emplace_back(
+                 copyToVertexArray,
+                 std::ref(vertices),
+                 indicesPerThread * i, 
+                 std::min(indicesPerThread * (i+1)-1, M * N - 1),
+                 gpuE_z
+             );
         }
+
+        for(auto& thread: threads) {
+            thread.join();
+        }
+
+
+        // for (int mm = 0; mm < M; ++mm) {
+        //     for (int nn = 0; nn < N; ++nn) {
+        //         int idx = 6 * (mm * N + nn);
+        //         sf::Color cellColor = gradientRedBlue(gpuE_z[mm * N + nn]);
+        //         if (sim.conductorField.get(mm, nn) == 1) {
+        //             cellColor = sf::Color::Magenta;
+        //         }
+        //
+        //         for (int offset = 0; offset < 6; ++offset) {
+        //             vertices[idx + offset].color = cellColor;
+        //         }
+        //     }
+        // }
 
         DEBUG_CODE(drawProfiler.stop(););
         prevMousePos = mousePos;
