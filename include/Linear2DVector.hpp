@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#define DECIMAL float 
+#define DECIMAL float
 
 template <typename T>
 class Linear2DVector {

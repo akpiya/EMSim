@@ -62,7 +62,6 @@ Simulation::Simulation(int m, int n, DECIMAL deltaX, DECIMAL deltaY, DECIMAL del
         C_eze(M, N), C_ezh(M, N), C_hxh(M, N-1), C_hxe(M, N-1), C_hyh(M-1, N), C_hye(M-1, N), conductorField(M, N) {
     initializeCoefficientMatrix();
 
-    /*
     device = MTL::CreateSystemDefaultDevice();
     
     bufferM = device->newBuffer(&M, sizeof(int), MTL::ResourceStorageModeShared);
@@ -86,7 +85,7 @@ Simulation::Simulation(int m, int n, DECIMAL deltaX, DECIMAL deltaY, DECIMAL del
 
     eFieldFunction = library->newFunction(NS::String::string("updateElectricField", NS::UTF8StringEncoding)); 
     hxFieldFunction = library->newFunction(NS::String::string("updateMagneticFieldX", NS::UTF8StringEncoding)); 
-    hyFieldFunction = library->newFunction(NS::String::string("updateMagneticFieldY", NS::UTF8StringEncoding));  */
+    hyFieldFunction = library->newFunction(NS::String::string("updateMagneticFieldY", NS::UTF8StringEncoding));
 }
 
 
@@ -115,9 +114,10 @@ void Simulation::gpuStepElectricField() {
     encoder->endEncoding();
 
     commandBuffer->commit();
+
     commandBuffer->waitUntilCompleted();
 
-    std::memcpy(bufferE_z->contents(), &E_z.data, sizeof(DECIMAL) * E_z.data.size());
+    std::memcpy(E_z.data.data(), bufferE_z->contents(), sizeof(DECIMAL) * E_z.data.size());
 
     pipelineState->release();
     commandQueue->release();
@@ -175,8 +175,8 @@ void Simulation::gpuStepMagneticField() {
     xcommandBuffer->waitUntilCompleted();
     ycommandBuffer->waitUntilCompleted();
 
-    std::memcpy(bufferH_x->contents(), &H_x.data, sizeof(DECIMAL) * H_x.data.size());
-    std::memcpy(bufferH_y->contents(), &H_y.data, sizeof(DECIMAL) * H_y.data.size());
+    std::memcpy(H_x.data.data(), bufferH_x->contents(), sizeof(DECIMAL) * H_x.data.size());
+    std::memcpy(H_y.data.data(), bufferH_y->contents(), sizeof(DECIMAL) * H_y.data.size());
     
     xencoder->release();
     yencoder->release();
@@ -246,6 +246,8 @@ void Simulation::stepRickertSource(DECIMAL time, DECIMAL location) {
     arg *= arg;
     arg = (1.0 - 2.0 * arg) * exp(-arg);
     E_z.get(M/2, N/2) = arg;
+    DECIMAL* gpuE_z = static_cast<DECIMAL*> (bufferE_z->contents());
+    gpuE_z[M/2 * N + N/2] = arg;
 }
 
 void Simulation::addConductorAt(int i, int j) {

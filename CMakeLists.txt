@@ -44,7 +44,6 @@ add_executable(main src/main.cpp src/Simulation.cpp)
 #     sfml-graphics
 # )
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
 target_link_libraries(main sfml-graphics)
 
