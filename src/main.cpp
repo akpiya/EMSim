@@ -18,8 +18,8 @@
 const int windowWidth = 1000;
 const int windowHeight = 800;
 
-const int M = 501;
-const int N = 501;
+const int M = 301;
+const int N = 301;
 const int vertexArrayWidth = N + 1;
 const int vertexArrayHeight = M + 1;
 
@@ -128,7 +128,7 @@ int main() {
     double time = 0.0;
 
     while (window.isOpen()) {
-        if (time >= 1000) {
+        if (time >= 5) {
             break;
         }
         sf::Event event;
