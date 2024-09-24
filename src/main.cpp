@@ -18,16 +18,16 @@
 const int windowWidth = 1000;
 const int windowHeight = 800;
 
-const int M = 1001;
-const int N = 1001;
+const int M = 501;
+const int N = 501;
 const int vertexArrayWidth = N + 1;
 const int vertexArrayHeight = M + 1;
 
 const double cellWidth = windowWidth / (double) N;
 const double cellHeight = windowHeight / (double) M;
 
-const double deltaX = 0.05;
-const double deltaY = 0.05;
+const double deltaX = 0.1;
+const double deltaY = 0.1;
 const double deltaT = 0.05;
 
 // multithreading constants
@@ -128,7 +128,7 @@ int main() {
     double time = 0.0;
 
     while (window.isOpen()) {
-        if (time >= 100) {
+        if (time >= 1000) {
             break;
         }
         sf::Event event;
