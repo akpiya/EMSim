@@ -19,15 +19,20 @@ const char *computeCode = R"(
         device const float* C_ezh [[ buffer(1) ]],
         device const float* H_y [[ buffer(2) ]],
         device const float* H_x [[ buffer(3) ]],
-        device float* E_z [[ buffer(4) ]],
-        constant int &M [[ buffer(5) ]],
-        constant int &N [[ buffer(6) ]],
+        device const char* conductorField [[ buffer(4) ]],
+        device float* E_z [[ buffer(5) ]],
+        constant int &M [[ buffer(6) ]],
+        constant int &N [[ buffer(7) ]],
         uint idx [[ thread_position_in_grid ]]
     ) {
         int i = idx / N;
         int j = idx % N;
         if (1 <= i && i < M-1 && 1 <= j < N-1) {
-            E_z[idx] = C_eze[idx] * E_z[idx] + C_ezh[idx] * ((H_y[idx] - H_y[idx - N]) - (H_x[idx] - H_x[idx - 1]));
+            if (conductorField[idx] == 0) {
+                E_z[idx] = C_eze[idx] * E_z[idx] + C_ezh[idx] * ((H_y[idx] - H_y[idx - N]) - (H_x[idx] - H_x[idx - 1]));
+            } else {
+                E_z[idx] = 0.0;
+            }
         }
     }
     
@@ -77,6 +82,8 @@ Simulation::Simulation(int m, int n, DECIMAL deltaX, DECIMAL deltaY, DECIMAL del
     bufferC_hye = device->newBuffer(C_hye.data.data(), C_hye.data.size() * sizeof(DECIMAL), MTL::ResourceStorageModeShared);
     bufferC_hyh = device->newBuffer(C_hyh.data.data(), C_hyh.data.size() * sizeof(DECIMAL), MTL::ResourceStorageModeShared);
 
+    bufferConductorField = device->newBuffer(conductorField.data.data(), conductorField.data.size() * sizeof(char), MTL::ResourceStorageModeShared);
+
     error = nullptr;
     library = device->newLibrary(NS::String::string(computeCode, NS::UTF8StringEncoding), nullptr, &error);
     error = nullptr;
@@ -100,9 +107,10 @@ void Simulation::gpuStepElectricField() {
     encoder->setBuffer(bufferC_ezh, 0, 1);
     encoder->setBuffer(bufferH_y, 0, 2);
     encoder->setBuffer(bufferH_x, 0, 3);
-    encoder->setBuffer(bufferE_z, 0, 4);
-    encoder->setBuffer(bufferM, 0, 5);
-    encoder->setBuffer(bufferN, 0, 6);
+    encoder->setBuffer(bufferConductorField, 0, 4);
+    encoder->setBuffer(bufferE_z, 0, 5);
+    encoder->setBuffer(bufferM, 0, 6);
+    encoder->setBuffer(bufferN, 0, 7);
 
     MTL::Size gridSize = MTL::Size(N * M, 1, 1);
     auto max_threads = (int) pipelineState->maxTotalThreadsPerThreadgroup();
@@ -245,10 +253,14 @@ void Simulation::stepRickertSource(DECIMAL time, DECIMAL location) {
 
 void Simulation::addConductorAt(int i, int j) {
     conductorField.get(i, j) = 1;
+    char *p = static_cast<char*>(bufferConductorField->contents());
+    p[i * N + j] = 1;
 }
 
 void Simulation::removeConductorAt(int i, int j) {
     conductorField.get(i, j) = 0;
+    char *p = static_cast<char*>(bufferConductorField->contents());
+    p[i * N + j] = 0;
 }
 
 void Simulation::initializeCoefficientMatrix() {

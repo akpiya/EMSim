@@ -18,16 +18,16 @@
 const int windowWidth = 1000;
 const int windowHeight = 800;
 
-const int M = 301;
-const int N = 301;
+const int M = 1001;
+const int N = 1001;
 const int vertexArrayWidth = N + 1;
 const int vertexArrayHeight = M + 1;
 
 const double cellWidth = windowWidth / (double) N;
 const double cellHeight = windowHeight / (double) M;
 
-const double deltaX = 0.1;
-const double deltaY = 0.1;
+const double deltaX = 0.05;
+const double deltaY = 0.05;
 const double deltaT = 0.05;
 
 // multithreading constants
@@ -56,12 +56,12 @@ sf::Color gradientGrayScale(double value) {
     return sf::Color(r, g, b);
 }
 
-void copyToVertexArray(sf::VertexArray& vertexArray, int start, int end, DECIMAL *gpuEz) {
+void copyToVertexArray(sf::VertexArray& vertexArray, Linear2DVector<char>& conductorField, int start, int end, DECIMAL *gpuEz) {
     for (int i = start; i <= end; i++) { // assume start < end
         sf::Color cellColor = gradientRedBlue(gpuEz[i]);
-        // if (conductorField.get(i / N, i % N) == 1) {
-        //     cellColor = sf::Color::Magenta;
-        // }
+        if (conductorField.get(i / N, i % N) == 1) {
+            cellColor = sf::Color::Magenta;
+        }
         for(int offset = 0; offset < 6; offset++) {
             vertexArray[6*i + offset].color = cellColor;
         }
@@ -200,6 +200,7 @@ int main() {
             threads.emplace_back(
                  copyToVertexArray,
                  std::ref(vertices),
+                 std::ref(sim.conductorField),
                  indicesPerThread * i, 
                  std::min(indicesPerThread * (i+1)-1, M * N - 1),
                  gpuE_z

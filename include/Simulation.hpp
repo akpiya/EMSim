@@ -52,6 +52,7 @@ private:
     void initializeCoefficientMatrix();
 
     MTL::Device *device;
+
     MTL::Buffer *bufferH_x;
     MTL::Buffer *bufferH_y;
 
@@ -63,6 +64,8 @@ private:
     MTL::Buffer *bufferC_ezh;
     MTL::Buffer *bufferM;
     MTL::Buffer *bufferN;
+
+    MTL::Buffer *bufferConductorField;
 
     MTL::Library *library;
     NS::Error *error;
