@@ -4,7 +4,7 @@ EMSim is an electromagnetic simulation tool built in SFML. Built upon the FDTD m
 ## Demo
 Here is a demo of the EM simulation. There is a source wave packet in the center which transmits outward. The user can draw reflectors with left-clicks and erase them with right-clicks. 
 
-
+https://github.com/user-attachments/assets/c95801c1-7a99-4b09-b5db-559e00565cba
 
 ## Installation
 Clone, build with cmake, and run on a Metal-compatible Apple PC.
