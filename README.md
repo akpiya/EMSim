@@ -28,7 +28,7 @@ Benchmarking with a grid size of 1001x1001 here are the results:
 | Baseline | 71879879 µs |
 | Fully GPU optimized | 19001845 µs | 
 
-At this larger scale, the GPU provides a 4x boost over the baseline. For a 3001x3001 grid, a GPU-enabled simulation step is 20x that of the a single-threaded CPU one.
+At this larger scale, the GPU provides a 4x boost over the baseline. For a 3001x3001 grid, a GPU-enabled simulation step is 20x faster than that of a single-threaded CPU step.
 
 ## Usage & Controls
 | Key | Control |
