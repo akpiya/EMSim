@@ -7,7 +7,10 @@ Here is a demo of the EM simulation. There is a source wave packet in the center
 https://github.com/user-attachments/assets/c95801c1-7a99-4b09-b5db-559e00565cba
 
 ## Installation
-Clone, build with cmake, and run on a Metal-compatible Apple PC.
+Clone with `git clone --recursive https://github.com/akpiya/EMSim.git`.
+In the repo, create a `build` directory and cd into it.
+From there, run `cmake ..`, then `make` and `./main`.
+Note that EMSim runes only on Metal-compatible Apple PCs.
 
 ## Performance
 This project went through multiple iterations to optimize performance. This table summarizes a few benchmarks detailing this progress. All benchmarks are done on a 301x301 grid with a simulation time-step up to 100. 

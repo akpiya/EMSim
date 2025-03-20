@@ -7,8 +7,6 @@
 #include "Simulation.hpp"
 #include "Profiler.cpp"
 
-#define DEBUG
-
 #ifdef DEBUG
     #define DEBUG_CODE(code) code
 #else
@@ -128,9 +126,6 @@ int main() {
     double time = 0.0;
 
     while (window.isOpen()) {
-        if (time >= 5) {
-            break;
-        }
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
